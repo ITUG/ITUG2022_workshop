@@ -82,7 +82,7 @@
                 <strong>Slides:</strong>
                 <a href="https://itug.github.io/ITUG2022_workshop" title="View the presentation online">
                     https://itug.github.io/ITUG2022_workshop
-                </a>
+                </a> | <a href="data/ITUG2022_workshop.pdf">PDF</a>
             </h4>
 
             <h5>
@@ -553,21 +553,19 @@ DICT tags CREATE
 ACCESS q: READ/VARIABLE/STREAM daten s,a+t+e,typ,stack,stack_num
 LOOP
  READ/EXIT q
- IF (stack.ct."|&lt;text&gt;|") THEN
+ IF (stack.nc."|&lt;text&gt;|") CYCLE
    IF (typ==4) THEN 
     tagname=GET_TAG_NAME (t)
    ELSE 
     tagname=GET_TAG_NAME (a)
    ENDIF 
    IF (tagname!="") DICT tags ADD/QUIET/COUNT tagname 
- ENDIF 
 ENDLOOP
 ENDACCESS q
-DICT tags UNLOAD tagnames,num,cnt
 DICT tags SIZE anzahl
-PRINT anzahl, " tags"
+DICT tags UNLOAD tagnames,num,cnt
 tag_count=JOIN (tagnames," ",cnt)
-TRACE *tag_count
+TRACE *anzahl,tag_count
 </code></pre>
         </div>   
         <div class="step">
