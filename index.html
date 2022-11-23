@@ -102,10 +102,10 @@
             <pre><code class="js">Gib Kommando >#ma,skriptdatei</code></pre> 
             
              
-                    <pre><code class="js">Gib Anweisung >x ,#ma,skriptdatei</code></pre>
+                    <pre><code class="js">Gib Anweisung >x, #ma,skriptdatei</code></pre>
             <div class="row">
                 <div class="five columns">
-                    <pre><code class="js">Gib Anweisung >x,  #ma,&lt;editor&gt;</code></pre></div>
+                    <pre><code class="js">Gib Anweisung >x, #ma,&lt;editor&gt;</code></pre></div>
            
                 <div class="seven columns even-left">
                      <pre class="up-25">
@@ -255,7 +255,7 @@ TRACE *status
 BUILD X_TABLE ss2buckels=*
 DATA |ss|ß|
 content_new=EXCHANGE(content,ss2buckels)
-RELEASE X_TABLE ssbuckels
+RELEASE X_TABLE ss2buckels
 
 
 
@@ -283,7 +283,7 @@ TRACE
 x=FIND_DIFF (content_a,0,0,content_b,0,0,char_a,char_b,position)
 </code></pre>        </div>  
         <div class="step"> <h2>Arbeiten mit Dateien</h2>
-            <h3>Dateiinhalte auf Variablen lesen</h3>          
+            <h3>Dateiinhalt auf Variablen lesen</h3>          
             <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
 
 -- Belegung der Systemvariable TUSTEP_DSK abfragen                
@@ -307,6 +307,7 @@ daten=REQUEST (url)
 daten=DECODE (daten,utf8)
 
 ERROR/STOP CREATE ("daten.tf",seq-o,-std-)
+FETCH dsk=TUSTEP_DSK
 path2tf=ADJUST_PATH (dsk,"daten.tf")
 
 -- Variableninhalt (ohne anmelden) in Datei schreiben
@@ -364,25 +365,7 @@ sz_files_2=SIZE(files)
             
         </div>    
     
-        <div class="step">
-            <h2>organisatorisches </h2>
-            <h3>LOOP</h3>
-            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{}
-LOOP n=1 to 9
-PRINT n
-ENDLOOP
-</code></pre>
-            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{}
-filebasename="datei_"                
-LOOP n
- IF (n>9) EXIT 
- n=CENTER (n,+2,"0")
- file=CONCAT (filebasename,n,".tf")
- ERROR/STOP CREATE (file,SEQ-o,-std-)
-ENDLOOP
-PRINT n
-</code></pre>
-        </div>
+        
         <div class="step">
             <h2>organisatorisches </h2>
             <h3>SELECT</h3>
@@ -444,15 +427,12 @@ ENDLOOP
 FETCH dsk = TUSTEP_DSK
 files=FILE_NAMES (-,$dsk)
 
-time=time(0)
-PRINT time
-
 BUILD R_TABLE tf="|*.tf|"
 tf_files=FILTER  (files,tf,-)
-RELEASE R_TABLE tf
-
 sz_tf_files=SIZE (tf_files)
 
+time=time(0)
+PRINT time
 n=0
 LOOP file=tf_files
  ERROR/STOP OPEN (file,READ,-std-)
@@ -460,10 +440,10 @@ LOOP file=tf_files
  interval=TIME_INTERVAL (hours,time,modified)
  IF (interval>1) THEN 
   n=n+1  
-  PRINT/COLOR:E9 n," ",file
+  PRINT/COLOR:E9 n," ",modified,": ",file
  ENDIF
 ENDLOOP
-PRINT/COLOR:0F "Ergebnis: "
+
 PRINT/COLOR:0F n," tf-Dateien von ",sz_tf_files," sind älter als eine Stunde."
 </code></pre>
             
@@ -478,19 +458,17 @@ $$ xml=*
 &lt;?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_lite.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?&gt;
 &lt;?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_lite.rng" type="application/xml"
 	schematypens="http://purl.oclc.org/dsdl/schematron"?&gt;
-&lt;TEI xmlns="http://www.tei-c.org/ns/1.0"&gt;
- &lt;teiHeader&gt;
- &lt;fileDesc&gt;&lt;titleStmt&gt;&lt;title&gt;Test&lt;/title&gt;&lt;/titleStmt&gt;
+&lt;TEI xmlns="http://www.tei-c.org/ns/1.0"&gt; &lt;teiHeader&gt;&lt;fileDesc&gt;&lt;titleStmt&gt;&lt;title&gt;Test&lt;/title&gt;&lt;/titleStmt&gt;
  &lt;publicationStmt&gt;&lt;p&gt;intern&lt;/p&gt;&lt;/publicationStmt&gt;
  &lt;sourceDesc&gt;
- &lt;p&gt;Übungsdatei für den TUSCRIPT workshop&lt;/p&gt;
- &lt;/sourceDesc&gt;&lt;/fileDesc&gt;
- &lt;/teiHeader&gt;
+ &lt;p&gt;Übungsdatei für TUSCRIPT workshop&lt;/p&gt;
+ &lt;/sourceDesc&gt;&lt;/fileDesc&gt;&lt;/teiHeader&gt;
  &lt;text&gt;&lt;body&gt;
  &lt;div type="letter"&gt;
  &lt;opener&gt;&lt;salute hand="#TK"&gt;Herzlich Willkommen&lt;/salute&gt;&lt;/opener&gt;
- &lt;p&gt;Es freut mich, dass &lt;lb/&gt;&lt;choice&gt;&lt;del&gt;ihr&lt;/del&gt;&lt;corr&gt;Sie&lt;/corr&gt;&lt;/choice&gt; so &lt;lb/&gt;zahlreich erschienen sind.&lt;/p&gt;
+ &lt;p&gt;Es freut mich, dass &lt;lb/&gt;&lt;choice&gt;&lt;del&gt;ihr&lt;/del&gt;&lt;corr&gt;Sie&lt;/corr&gt;&lt;/choice&gt; zahl&lt;lb rend="hyphen"/&gt;reich erschienen sind.&lt;/p&gt;
  &lt;/div&gt;&lt;/body&gt;&lt;/text&gt;&lt;/TEI&gt;
+
 $$ MODE STATEMENT
 ERROR/STOP CREATE ("test.xml",FDF-o,-std-)
 FILE/ERASE/UTF8 "test.xml" = xml
@@ -505,6 +483,7 @@ file="test.xml"
 path2file=ADJUST_PATH (dsk,file)
 ERROR/STOP READ (path2file,daten,UTF8)
 -- TRACE *daten
+
 ACCESS q: READ/VARIABLE/STREAM daten s,a+t+e,typ,stack,stack_num
 LOOP
  READ/EXIT q
@@ -531,7 +510,7 @@ LOOP
  READ/EXIT q
  IF (typ==4) THEN
    tagname=GET_TAG_NAME (t)
-   PRINT tagname
+   PRINT tagname," - ",t
  ENDIF 
 ENDLOOP
 ENDACCESS q
