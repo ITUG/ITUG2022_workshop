@@ -104,10 +104,29 @@
             <h2>TUSCRIPT</h2>
             <h3>ausführen</h3>            
             <pre><code class="js">Gib Kommando >#ma,skriptdatei</code></pre> 
-            <pre><code class="js">Gib Anweisung >x ,#ma,skriptdatei</code></pre> 
-            <pre><code class="js">Gib Anweisung >x ,#ma,&lt;editor&gt;</code></pre>
-            <pre><code class="js">Gib Kommando >$meinSkript</code></pre>
-            <p class="x-small right up-25">Skript ist Segment in einer Segmentdatei und beginnt mit <code>$$!</code></p>
+            
+             
+                    <pre><code class="js">Gib Anweisung >x ,#ma,skriptdatei</code></pre>
+            <div class="row">
+                <div class="five columns">
+                    <pre><code class="js">Gib Anweisung >x,  #ma,&lt;editor&gt;</code></pre></div>
+           
+                <div class="seven columns even-left">
+                     <pre class="up-25">
+                         <code>y,*=execute
+y,execute=clr_cmd_line,"x #ma,&lt;editor&gt;",confirm
+</code>
+                    </pre>
+                </div>
+            </div><div class="row">
+                
+                <div class="five columns">
+                    <pre><code class="js">Gib Kommando >$meinSkript</code></pre>
+                </div>
+                <div class="seven columns">
+                    <p class="medium">Skript ist Segment in einer mit <code>#de,segmentdatei</code> definierten Segmentdatei und beginnt mit <code>$$!</code></p>
+                </div>
+            </div>
         </div>
         <div class="step">
             <h2>Mode</h2>
@@ -170,12 +189,12 @@ ERROR/STOP CREATE (file,SEQ-o,-std-)
                         <h3>anmelden | kopieren | abmelden | umbenennen</h3>
                     <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
 file="datei.tf"
--- anmelden
+-- anmelden READ | WRITE 
 ERROR/STOP OPEN (file,READ,-std-)
 
--- anlegen
+-- anlegen SEQ | FDF | RAN ; -o | -t | -p 
 file_dubble="datei_zwei.tf"
-ERROR/STOP CREATE (file_dubble,seq-o,-std-)
+ERROR/STOP CREATE (file_dubble,SEQ-o,-std-)
 
 -- kopieren
 ERROR/STOP COPY (file,file_dubble)
@@ -191,26 +210,58 @@ ERROR/STOP RENAME (old_name,new_name)
                 </div> 
         <div class="step"> <h2>Arbeiten mit Dateien</h2>
             <h3>Variableninhalt in Datei schreiben – Dateien vergleichen</h3>          
-            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
+            <div class="row">
+                <div class="six columns">
+                    <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
 file="datei.tf"
 -- (zum Schreiben) anmelden 
 ERROR/STOP OPEN (file,WRITE,-std-) 
-
+                        
 MODE DATA 
 $$ content=*
-Es gibt nichts gutes, 
+Es gibt nichts Gutes, 
 ausser man tut es. 
-
+                        
 $$ MODE STATEMENT
 FILE/ERASE $file = content
-
+                        
 file_new="datei_kopie.tf"
-content_new=EXCHANGE (content,"|ss|ß|")
-FILE/ERASE $file_new = content_new
 
+
+content_new=EXCHANGE (content,"|ss|ß|")
+
+FILE/ERASE $file_new = content_new
+                        
 status=COMPARE (file,file_new)
 TRACE *status
-</code></pre>        </div>        
+</code></pre>
+                </div>
+                <div class="six columns">
+                    <pre><code>
+                        
+                        
+                        
+                        
+                        
+
+
+
+
+
+
+
+
+BUILD X_TABLE ss2buckels=*
+DATA |ss|ß|
+content_new=EXCHANGE(content,ss2buckels)
+RELEASE X_TABLE ssbuckels
+
+
+
+
+</code></pre>
+                </div>
+            </div>        </div>        
         <div class="step"> <h2>Arbeiten mit Dateien</h2>
             <h3>Dateiinhalt in Variable – Variableninhalt vergleichen</h3>          
             <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
@@ -233,37 +284,159 @@ x=FIND_DIFF (content_a,0,0,content_b,0,0,char_a,char_b,position)
         <div class="step"> <h2>Arbeiten mit Dateien</h2>
             <h3>Dateiinhalte auf Variablen lesen</h3>          
             <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
+
+-- Belegung der Systemvariable TUSTEP_DSK abfragen                
 FETCH dsk = TUSTEP_DSK
+
+-- Pfad zur Datei 
 file="datei.tf"
 path2file=ADJUST_PATH (dsk,file)
 TRACE *path2file
+
+-- Dateiinhalt (ohne anmelden) auf Variable legen
 status=READ (path2file,content)
 TRACE *content
 </code></pre>        </div> 
         <div class="step"> <h2>Arbeiten mit Dateien</h2>
             <h3>WWW-Content auf Variable lesen – REQUEST</h3>          
             <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
+
 url="http://www.itug.de"
 daten=REQUEST (url)
 daten=DECODE (daten,utf8)
+
 ERROR/STOP CREATE ("daten.tf",seq-o,-std-)
 path2tf=ADJUST_PATH (dsk,"daten.tf")
+
+-- Variableninhalt (ohne anmelden) in Datei schreiben
 ERROR/STOP WRITE (path2tf,daten)
 </code></pre>        </div> 
         <div class="step"> <h2>Arbeiten mit Dateien</h2>
             <h3>Variableninhalt in Datei schreiben</h3>          
             <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{}
+
+-- Variableninhalt von TUSTEP-Datei auf Variable einlesen
 tf_file="datei.tf"
 FETCH dsk = TUSTEP_DSK
 path2tf=ADJUST_PATH (dsk,tf_file)
 ERROR/STOP READ (path2tf,daten)
 TRACE *daten
 
+-- Variableninhalt in Fremddatei schreiben
 txt_file="datei.txt"
 ERROR/STOP CREATE (txt_file,FDF-o,-std-)
 path2txt=ADJUST_PATH (dsk,txt_file)
 ERROR/STOP WRITE (path2txt,daten,UTF8)
 </code></pre>        </div>         
+ 
+        <div class="step">
+            <h2>organisatorisches </h2>
+            <h3>LOOP</h3>
+            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{}
+LOOP n=1 to 9
+PRINT n
+ENDLOOP
+</code></pre>
+            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{}
+filebasename="datei_"                
+LOOP n
+ IF (n>9) EXIT 
+ n=CENTER (n,+2,"0")
+ file=CONCAT (filebasename,n,".tf")
+ ERROR/STOP CREATE (file,SEQ-o,-std-)
+ENDLOOP
+PRINT n
+</code></pre>
+        </div>
+        <div class="step">
+            <h2>organisatorisches </h2>
+            <h3>FILE_NAMES</h3>
+            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{} 
+TRACE                 
+files=FILE_NAMES (-,-std-)
+sz_files_1=SIZE(files)
+
+FETCH dsk = TUSTEP_DSK
+files=FILE_NAMES (-,$dsk)
+sz_files_2=SIZE(files)
+</code></pre>
+            
+        </div>    
+    
+        <div class="step">
+            <h2>organisatorisches </h2>
+            <h3>LOOP</h3>
+            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{}
+LOOP n=1 to 9
+PRINT n
+ENDLOOP
+</code></pre>
+            <pre><code class="linenumbers">$$ MODE TUSCRIPT,{}
+filebasename="datei_"                
+LOOP n
+ IF (n>9) EXIT 
+ n=CENTER (n,+2,"0")
+ file=CONCAT (filebasename,n,".tf")
+ ERROR/STOP CREATE (file,SEQ-o,-std-)
+ENDLOOP
+PRINT n
+</code></pre>
+        </div>
+        <div class="step">
+            <h2>organisatorisches </h2>
+            <h3>SELECT</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{} 
+FETCH dsk = TUSTEP_DSK
+files=FILE_NAMES (-,$dsk)
+sz_files_all=SIZE(files)
+
+BUILD S_TABLE tf=*
+DATA |*.tf|
+
+tf_files=SELECT (files,tf)
+RELEASE S_TABLE tf
+
+sz_files_tf=SIZE(tf_files)
+
+-- Bedingung .ne. | != | .eq. | == | .gt. | &gt; | .lt. | &lt; 
+IF (sz_files_all!=sz_files_tf) TRACE *sz_files_all,sz_files_tf
+
+LOOP n,file=tf_files
+ n=CENTER (n,+3,"0")
+ PRINT/COLOR:9E n," ",file
+ENDLOOP
+</code></pre>
+            
+        </div>        
+        <div class="step">
+            <h2>organisatorisches </h2>
+            <h3>FILTER | FILTER_INDEX</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{} 
+FETCH dsk = TUSTEP_DSK
+files=FILE_NAMES (-,$dsk)
+
+BUILD R_TABLE/or tf=*
+DATA |*.tf|
+DATA |*.tus|*.tstp|
+
+tf_files=FILTER       (files,tf,-)
+tf_index=FILTER_INDEX (files,tf,-)
+RELEASE R_TABLE tf
+
+sz_files_tf=SIZE(tf_files)
+
+TRACE *sz_files_tf,tf_index
+
+LOOP n,index=tf_index
+ n=CENTER (n,+3,"0")
+ file=SELECT (files,#index)
+ PRINT/COLOR:E9 n," ",file
+ENDLOOP
+</code></pre>
+            
+        </div>    
+    
+    
     </div>
 
     <!-- jquery -->
