@@ -71,7 +71,7 @@
     <div id="impress">
 
         <div class="step">
-            <h4><strong>24. November 2022</strong> | <a href="#">ADWL Mainz</a></h4>
+            <h4><strong>24. November 2022</strong> | <a href="https://www.itug.de/pages/aktuelles.html#tuscript2022">ADWL Mainz</a></h4>
             <h4><strong>ITUG Mitgliederversammlung</strong></h4>
 
             <h1 class="down-100">TUSCRIPT</h1>
@@ -467,7 +467,157 @@ PRINT/COLOR:0F "Ergebnis: "
 PRINT/COLOR:0F n," tf-Dateien von ",sz_tf_files," sind älter als eine Stunde."
 </code></pre>
             
-        </div>      
+        </div> 
+        <div class="step">
+            <h2>XML </h2>
+            <h3>Datei generieren </h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
+MODE DATA
+$$ xml=*
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_lite.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?&gt;
+&lt;?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_lite.rng" type="application/xml"
+	schematypens="http://purl.oclc.org/dsdl/schematron"?&gt;
+&lt;TEI xmlns="http://www.tei-c.org/ns/1.0"&gt;
+ &lt;teiHeader&gt;
+ &lt;fileDesc&gt;&lt;titleStmt&gt;&lt;title&gt;Test&lt;/title&gt;&lt;/titleStmt&gt;
+ &lt;publicationStmt&gt;&lt;p&gt;intern&lt;/p&gt;&lt;/publicationStmt&gt;
+ &lt;sourceDesc&gt;
+ &lt;p&gt;Übungsdatei für den TUSCRIPT workshop&lt;/p&gt;
+ &lt;/sourceDesc&gt;&lt;/fileDesc&gt;
+ &lt;/teiHeader&gt;
+ &lt;text&gt;&lt;body&gt;
+ &lt;div type="letter"&gt;
+ &lt;opener&gt;&lt;salute hand="#TK"&gt;Herzlich Willkommen&lt;/salute&gt;&lt;/opener&gt;
+ &lt;p&gt;Es freut mich, dass &lt;lb/&gt;&lt;choice&gt;&lt;del&gt;ihr&lt;/del&gt;&lt;corr&gt;Sie&lt;/corr&gt;&lt;/choice&gt; so &lt;lb/&gt;zahlreich erschienen sind.&lt;/p&gt;
+ &lt;/div&gt;&lt;/body&gt;&lt;/text&gt;&lt;/TEI&gt;
+$$ MODE STATEMENT
+ERROR/STOP CREATE ("test.xml",FDF-o,-std-)
+FILE/ERASE/UTF8 "test.xml" = xml
+</code></pre>
+        </div> 
+        <div class="step">
+            <h2>XML-Zugriff </h2>
+            <h3>Elemente und Attribute</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
+FETCH dsk=TUSTEP_DSK
+file="test.xml"
+path2file=ADJUST_PATH (dsk,file)
+ERROR/STOP READ (path2file,daten,UTF8)
+-- TRACE *daten
+ACCESS q: READ/VARIABLE/STREAM daten s,a+t+e,typ,stack,stack_num
+LOOP
+ READ/EXIT q
+ IF (a.hn."salute") PRINT/COLOR:0F t
+ IF (a.ha."hand") THEN 
+  handvalue=GET_ATTRIBUTE (a,"hand")
+  PRINT/COLOR:0F handvalue
+ ENDIF 
+ENDLOOP
+ENDACCESS q
+</code></pre>
+        </div>
+        <div class="step">
+            <h2>XML-Zugriff </h2>
+            <h3>Leere Elemente sammeln</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
+FETCH dsk=TUSTEP_DSK
+file="test.xml"
+path2file=ADJUST_PATH (dsk,file)
+ERROR/STOP READ (path2file,daten,UTF8)
+
+ACCESS q: READ/VARIABLE/STREAM daten s,a+t+e,typ,stack,stack_num
+LOOP
+ READ/EXIT q
+ IF (typ==4) THEN
+   tagname=GET_TAG_NAME (t)
+   PRINT tagname
+ ENDIF 
+ENDLOOP
+ENDACCESS q
+</code></pre>
+        </div>
+        <div class="step">
+            <h2>XML-Zugriff </h2>
+            <h3>Tags in //text sammeln</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
+FETCH dsk=TUSTEP_DSK
+file="test.xml"
+path2file=ADJUST_PATH (dsk,file)
+ERROR/STOP READ (path2file,daten,UTF8)
+tags=*
+ACCESS q: READ/VARIABLE/STREAM daten s,a+t+e,typ,stack,stack_num
+LOOP
+ READ/EXIT q
+ IF (stack.ct."|&lt;text&gt;|") THEN
+   IF (typ==4) THEN 
+    tagname=GET_TAG_NAME (t)
+   ELSE 
+    tagname=GET_TAG_NAME (a)
+   ENDIF 
+   IF (tagname!="") tags=APPEND(tags,tagname)
+ ENDIF 
+ENDLOOP
+ENDACCESS q
+TRACE *tags
+</code></pre>
+        </div>
+        <div class="step">
+            <h2>XML-Zugriff</h2>
+            <h3>Tags in //text in DICTIONARY sammeln</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
+FETCH dsk=TUSTEP_DSK
+file="test.xml"
+path2file=ADJUST_PATH (dsk,file)
+ERROR/STOP READ (path2file,daten,UTF8)
+DICT tags CREATE 
+ACCESS q: READ/VARIABLE/STREAM daten s,a+t+e,typ,stack,stack_num
+LOOP
+ READ/EXIT q
+ IF (stack.ct."|&lt;text&gt;|") THEN
+   IF (typ==4) THEN 
+    tagname=GET_TAG_NAME (t)
+   ELSE 
+    tagname=GET_TAG_NAME (a)
+   ENDIF 
+   IF (tagname!="") DICT tags ADD/QUIET/COUNT tagname 
+ ENDIF 
+ENDLOOP
+ENDACCESS q
+DICT tags UNLOAD tagnames,num,cnt
+DICT tags SIZE anzahl
+PRINT anzahl, " tags"
+tag_count=JOIN (tagnames," ",cnt)
+TRACE *tag_count
+</code></pre>
+        </div>   
+        <div class="step">
+            <h2>XML</h2>
+            <h3>TAGS_INDENT </h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
+FETCH dsk=TUSTEP_DSK
+file="test.xml"
+path2file=ADJUST_PATH (dsk,file)
+ERROR/STOP READ (path2file,daten,UTF8)
+
+daten=JOIN(daten,"")
+
+ASK "Sollen lb ignoriert werden? ja/nein":antwort= ""
+
+IF (antwort.ab."nein") THEN
+ daten=INDENT_TAGS (daten,-,"    ")
+ELSE
+ BUILD R_TABLE/TEXT/OR ign ="|*&lt;lb&gt;|"
+ daten=INDENT_TAGS (daten,ign,"    ")
+ENDIF
+
+LOOP/CLEAR line=daten
+ IF (line=="") CYCLE
+ daten=APPEND(daten,line)
+ENDLOOP
+TRACE *daten
+</code></pre>
+        </div>   
     </div>
 
     <!-- jquery -->
