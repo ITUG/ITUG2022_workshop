@@ -95,11 +95,7 @@
             </h5>
         </div>
         
-        <div class="step">
-            <h2>TUSCRIPT</h2>
-            <h3>Skriptsprache</h3>
-            <pre><code class="linenumbers">$$ PRINT "Hello world"
-</code></pre></div>
+        
         <div class="step">
             <h2>TUSCRIPT</h2>
             <h3>ausführen</h3>            
@@ -128,6 +124,11 @@ y,execute=clr_cmd_line,"x #ma,&lt;editor&gt;",confirm
                 </div>
             </div>
         </div>
+        <div class="step">
+            <h2>TUSCRIPT</h2>
+            <h3>Skriptsprache</h3>
+            <pre><code class="linenumbers">$$ PRINT "Hello world"
+</code></pre></div>
         <div class="step">
             <h2>Mode</h2>
             <h3>TUSCRIPT – DATA – STATEMENT</h3>
@@ -385,7 +386,7 @@ PRINT n
         <div class="step">
             <h2>organisatorisches </h2>
             <h3>SELECT</h3>
-            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{} 
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
 FETCH dsk = TUSTEP_DSK
 files=FILE_NAMES (-,$dsk)
 sz_files_all=SIZE(files)
@@ -411,7 +412,7 @@ ENDLOOP
         <div class="step">
             <h2>organisatorisches </h2>
             <h3>FILTER | FILTER_INDEX</h3>
-            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{} 
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC
 FETCH dsk = TUSTEP_DSK
 files=FILE_NAMES (-,$dsk)
 
@@ -436,7 +437,37 @@ ENDLOOP
             
         </div>    
     
-    
+        <div class="step">
+            <h2>organisatorisches </h2>
+            <h3>modified | TIME_INTERVAL</h3>
+            <pre><code class="linenumbers xml">$$ MODE TUSCRIPT,{},MAC 
+FETCH dsk = TUSTEP_DSK
+files=FILE_NAMES (-,$dsk)
+
+time=time(0)
+PRINT time
+
+BUILD R_TABLE tf="|*.tf|"
+tf_files=FILTER  (files,tf,-)
+RELEASE R_TABLE tf
+
+sz_tf_files=SIZE (tf_files)
+
+n=0
+LOOP file=tf_files
+ ERROR/STOP OPEN (file,READ,-std-)
+ modified=MODIFIED (file)
+ interval=TIME_INTERVAL (hours,time,modified)
+ IF (interval>1) THEN 
+  n=n+1  
+  PRINT/COLOR:E9 n," ",file
+ ENDIF
+ENDLOOP
+PRINT/COLOR:0F "Ergebnis: "
+PRINT/COLOR:0F n," tf-Dateien von ",sz_tf_files," sind älter als eine Stunde."
+</code></pre>
+            
+        </div>      
     </div>
 
     <!-- jquery -->
